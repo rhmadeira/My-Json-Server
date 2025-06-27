@@ -16,19 +16,25 @@ server.use((req, res, next) => {
     const originalSend = res.send;
 
     res.send = function (body) {
-        let data;
+        let parsed;
+
         try {
-            data = JSON.parse(body);
+            parsed = JSON.parse(body);
         } catch {
             return originalSend.call(this, body);
         }
 
-        const isArray = Array.isArray(data);
+        // Se já vier com a estrutura esperada, não reembalar
+        if (parsed.hasOwnProperty('value') && parsed.hasOwnProperty('httpStatusCode')) {
+            return originalSend.call(this, body); // já está tratado
+        }
+
+        const isArray = Array.isArray(parsed);
         const totalCount = res.getHeader('X-Total-Count');
 
         const response = {
-            value: data,
-            count: totalCount ? Number(totalCount) : (isArray ? data.length : 1),
+            value: parsed,
+            count: totalCount ? Number(totalCount) : (isArray ? parsed.length : 1),
             hasSuccess: true,
             hasError: false,
             errors: [],
