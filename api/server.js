@@ -17,24 +17,20 @@ server.use((req, res, next) => {
 
     res.send = function (body) {
         let parsed;
-
         try {
             parsed = JSON.parse(body);
         } catch {
-            return originalSend.call(this, body);
+            return originalSend.call(this, body); // não é JSON válido
         }
 
-        // Se já vier com a estrutura esperada, não reembalar
-        if (parsed.hasOwnProperty('value') && parsed.hasOwnProperty('httpStatusCode')) {
-            return originalSend.call(this, body); // já está tratado
-        }
-
-        const isArray = Array.isArray(parsed);
+        // Corrige caso a resposta já venha com `value` dentro
+        const data = parsed?.value !== undefined ? parsed.value : parsed;
+        const isArray = Array.isArray(data);
         const totalCount = res.getHeader('X-Total-Count');
 
         const response = {
-            value: parsed,
-            count: totalCount ? Number(totalCount) : (isArray ? parsed.length : 1),
+            value: data,
+            count: totalCount ? Number(totalCount) : (isArray ? data.length : 1),
             hasSuccess: true,
             hasError: false,
             errors: [],
