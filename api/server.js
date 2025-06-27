@@ -16,20 +16,19 @@ server.use((req, res, next) => {
     const originalSend = res.send;
 
     res.send = function (body) {
-        let parsed;
-
+        let data;
         try {
-            parsed = JSON.parse(body);
+            data = JSON.parse(body);
         } catch {
             return originalSend.call(this, body);
         }
 
-        const isArray = Array.isArray(parsed);
+        const isArray = Array.isArray(data);
         const totalCount = res.getHeader('X-Total-Count');
 
         const response = {
-            value: isArray ? parsed : [],
-            count: totalCount ? Number(totalCount) : (isArray ? parsed.length : 1),
+            value: data,
+            count: totalCount ? Number(totalCount) : (isArray ? data.length : 1),
             hasSuccess: true,
             hasError: false,
             errors: [],
@@ -42,6 +41,7 @@ server.use((req, res, next) => {
 
     next();
 });
+
 
 server.use(router);
 
