@@ -13,6 +13,7 @@ server.use(jsonServer.rewriter({
 
 // Middleware para tratar paginação e customizar resposta
 server.use((req, res, next) => {
+    res.header('Access-Control-Expose-Headers', 'X-Total-Count');
     const originalSend = res.send;
 
     res.send = function (body) {
